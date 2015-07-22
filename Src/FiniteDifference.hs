@@ -1,15 +1,18 @@
 module FiniteDifference where
 
-import Data.Array
+import qualified Data.Vector as V
 
 data Discretization = Discretization {
-    dt :: Double,
-    dx :: Double
+    timeDelta :: Double,
+    spaceDelta :: Double
 }
 
-nextState :: (Num a, Ix b) => 
-    Discretization -> (Discretization -> Array b a -> b -> a) -> Array b a -> Array b a
-nextState d f currentState = array bounds' nextState'
-    where
-        bounds' = bounds currentState
-        nextState' = map (\i -> (i, f d currentState i)) (indices currentState)
+type NumericArray = V.Vector Double
+
+type UpdateFunction = (Discretization -> NumericArray -> Int -> Double)
+
+nextState :: Discretization -> UpdateFunction -> NumericArray -> NumericArray
+nextState d f currentState = V.imap updateElement (V.slice 1 elementCount currentState)
+    where 
+        updateElement = \e _ -> f d currentState e
+        elementCount = V.length currentState - 2
