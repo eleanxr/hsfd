@@ -17,8 +17,8 @@ nextState d f currentState = V.imap updateElement (V.slice 1 elementCount curren
         updateElement = \e _ -> f d currentState e
         elementCount = V.length currentState - 2
 
-imapStencil :: V.Vector Bool -> (Int -> a -> b) -> V.Vector a -> V.Vector b
-imapStencil stencil f v = V.imap conditionF V.zip stencil v where
+imapStencil :: V.Vector Bool -> (Int -> a -> a) -> V.Vector a -> V.Vector a
+imapStencil stencil f v = V.imap conditionF (V.zip stencil v) where
     conditionF i (s, value)
         | s = f i value
         | otherwise = value
