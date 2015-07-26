@@ -19,7 +19,9 @@ main = do
     hClose output
 
 {- Evolve the system, outputting as we go.
-It seems like I should be able to use forM to evolve the system.
+    FIXME:
+    It seems like I should be able to use forM to evolve the system.
+    It also seems like I shouldn't have to mix evolution with IO
 -}
 evolve :: Handle -> Discretization -> [Double] -> NumericArray -> IO ()
 evolve out _ [] finalState = hPutStrLn out $ format finalState
