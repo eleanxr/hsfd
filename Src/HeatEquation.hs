@@ -4,10 +4,10 @@ import FiniteDifference
 import qualified Data.Vector as V
 
 heatOperator :: UpdateFunction
-heatOperator d state i = state V.! i + alpha * coeff * derivative
+heatOperator d state i _ = state V.! i + alpha * coeff * derivative
     where
         alpha = 1.0
-        coeff = (timeDelta d) / ((spaceDelta d) * (timeDelta d))
+        coeff = (timeDelta d) / (spaceDelta d)**2
         derivative = state V.! (i + 1) - 2 * state V.! i + state V.! (i - 1)
 
 testState :: V.Vector Double
