@@ -13,15 +13,19 @@ type UpdateFunction = (Discretization -> NumericArray -> Int -> Double -> Double
 
 {-  Get the next state of the system given the current state. -}
 nextState :: Discretization -> UpdateFunction -> NumericArray -> NumericArray
-nextState d f currentState = imapStencil boundaryStencil (f d currentState) currentState
+nextState d f state = imapStencil boundaryStencil update identity state where
+    update = f d state
+    identity _ v = v
 
 {- Apply a function to a vector given a stencil. Where the stencil
 evaluates to True, the function will be applied. Where it is False the
-identity is applied. -}
-imapStencil :: V.Vector Bool -> (Int -> a -> a) -> V.Vector a -> V.Vector a
-imapStencil stencil f v = V.imap conditionF (V.zip stencil v) where
-    conditionF i (s, value)
-        | s = f i value
-        | otherwise = value
+falseFunction is applied. -}
+imapStencil :: V.Vector Bool -> (Int -> a -> b) -> (Int -> a -> b)
+    -> V.Vector a -> V.Vector b
+imapStencil stencil t f v = V.imap conditional zipped where
+    zipped = V.zip stencil v
+    conditional i (s, value)
+        | s = t i value
+        | otherwise = f i value
 
 boundaryStencil = V.singleton False V.++ V.replicate 18 True V.++ V.singleton False
