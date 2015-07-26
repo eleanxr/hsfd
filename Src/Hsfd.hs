@@ -31,4 +31,4 @@ evolve out discretization steps state = do
     evolve out discretization (tail steps) state'
 
 format :: Show a => V.Vector a -> String
-format v = intercalate " " (map show (V.toList v))
+format = unwords . (map show) . V.toList
