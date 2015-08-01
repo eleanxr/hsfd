@@ -10,12 +10,10 @@ data Discretization = Discretization {
     spaceDelta :: Double
 } deriving (Show)
 
-type NumericArray = V.Vector Double
-
-type UpdateFunction = (Discretization -> NumericArray -> Int -> Double -> Double)
+type UpdateFunction  a = (Discretization -> V.Vector a -> Int -> a -> a)
 
 {-|  Get the next state of the system given the current state. -}
-nextState :: Discretization -> UpdateFunction -> NumericArray -> NumericArray
+nextState :: Discretization -> UpdateFunction a -> V.Vector a -> V.Vector a
 nextState d f state = imapStencil boundaryStencil update identity state where
     update = f d state
     identity _ v = v
@@ -33,19 +31,15 @@ imapStencil stencil t f v = V.imap conditional zipped where
 
 boundaryStencil = V.singleton False V.++ V.replicate 18 True V.++ V.singleton False
 
-{-| Allow customization of vector IO.
-FIXME I don't like having to put the type constraint on writeVector, I think
-there's a way to allow the type constraint to be declared on the instance
-(which is what would make sense because there's no reason to require Show in
-the typeclass definition).
--}
-class Monad m => VectorIO h m | m -> h where
-    writeVector :: Show a => h -> V.Vector a -> m ()
+{-| Allow customization of vector IO. -}
+class Monad m => VectorIO h m a | m -> h where
+    writeVector :: h -> V.Vector a -> m ()
 
 {-| Evolve the given operator through a set of timesteps, processing each state
 using a VectorIO instance.
 -}
-evolve :: VectorIO h m => h -> Discretization -> [Double] -> UpdateFunction -> NumericArray -> m ()
+evolve :: VectorIO h m a => h -> Discretization -> [Double]
+    -> UpdateFunction a -> V.Vector a -> m ()
 evolve out _ [] _ finalState = writeVector out finalState
 evolve out discretization steps operator state = do
     writeVector out state

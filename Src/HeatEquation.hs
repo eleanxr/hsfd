@@ -3,7 +3,7 @@ module HeatEquation where
 import FiniteDifference
 import qualified Data.Vector as V
 
-heatOperator :: UpdateFunction
+heatOperator :: UpdateFunction Double
 heatOperator d state i _ = state V.! i + alpha * coeff * derivative
     where
         alpha = 1.0

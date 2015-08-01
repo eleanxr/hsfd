@@ -1,9 +1,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 import System.Environment
 
-import FiniteDifference(
-    Discretization(..), NumericArray, nextState, VectorIO, writeVector, evolve)
-import HeatEquation(heatOperator, testState)
+import FiniteDifference
+import HeatEquation
 
 import Control.Monad
 import qualified Data.Vector as V
@@ -20,8 +19,11 @@ main = do
     evolve output d steps heatOperator state
     hClose output
 
-instance VectorIO Handle IO where
-    writeVector handle vector = hPutStrLn handle $ format vector
+writeAsString :: Show a => Handle -> V.Vector a -> IO ()
+writeAsString handle vector = hPutStrLn handle $ format vector
+
+instance VectorIO Handle IO Double where
+    writeVector = writeAsString
 
 format :: Show a => V.Vector a -> String
 format = unwords . (map show) . V.toList
