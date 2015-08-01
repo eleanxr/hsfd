@@ -38,7 +38,7 @@ class Monad m => VectorIO h m a | m -> h where
 {-| Evolve the given operator through a set of timesteps, processing each state
 using a VectorIO instance.
 -}
-evolve :: VectorIO h m a => h -> Discretization -> [Double]
+evolve :: VectorIO h m a => h -> Discretization -> [a]
     -> UpdateFunction a -> V.Vector a -> m ()
 evolve out _ [] _ finalState = writeVector out finalState
 evolve out discretization steps operator state = do
