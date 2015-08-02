@@ -16,7 +16,7 @@ main = do
     let steps = [0.0, 0.001 .. 1.0] :: [Double]
     let d = Discretization 0.001 0.05
     output <- openFile "out.dat" WriteMode
-    evolve output d steps heatOperator state
+    evolve output d steps heatOperator boundaryStencil state
     hClose output
 
 writeAsString :: Show a => Handle -> V.Vector a -> IO ()

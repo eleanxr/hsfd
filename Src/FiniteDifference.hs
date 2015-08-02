@@ -13,8 +13,9 @@ data Discretization = Discretization {
 type UpdateFunction  a = (Discretization -> V.Vector a -> Int -> a -> a)
 
 {-|  Get the next state of the system given the current state. -}
-nextState :: Discretization -> UpdateFunction a -> V.Vector a -> V.Vector a
-nextState d f state = imapStencil boundaryStencil update identity state where
+nextState :: Discretization -> UpdateFunction a
+    -> V.Vector Bool -> V.Vector a -> V.Vector a
+nextState d f boundaryStencil state = imapStencil boundaryStencil update identity state where
     update = f d state
     identity _ v = v
 
@@ -29,8 +30,6 @@ imapStencil stencil t f v = V.imap conditional zipped where
         | s = t i value
         | otherwise = f i value
 
-boundaryStencil = V.singleton False V.++ V.replicate 18 True V.++ V.singleton False
-
 {-| Allow customization of vector IO. -}
 class Monad m => VectorIO h m a | m -> h where
     writeVector :: h -> V.Vector a -> m ()
@@ -39,9 +38,9 @@ class Monad m => VectorIO h m a | m -> h where
 using a VectorIO instance.
 -}
 evolve :: VectorIO h m a => h -> Discretization -> [a]
-    -> UpdateFunction a -> V.Vector a -> m ()
-evolve out _ [] _ finalState = writeVector out finalState
-evolve out discretization steps operator state = do
+    -> UpdateFunction a -> V.Vector Bool -> V.Vector a -> m ()
+evolve out _ [] _ _ finalState = writeVector out finalState
+evolve out discretization steps operator boundaryStencil state = do
     writeVector out state
-    evolve out discretization (tail steps) operator state'
-        where state' = nextState discretization operator state
+    evolve out discretization (tail steps) operator boundaryStencil state'
+        where state' = nextState discretization operator boundaryStencil state
